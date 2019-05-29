@@ -1,0 +1,22 @@
+﻿  paladog.cpp
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(57): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(582): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(604): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(619): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(639): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(654): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(677): warning C4552: '<=': 의미 없는 연산자입니다. 파생 작업이 있는 연산자여야 합니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(695): warning C4244: '인수': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(749): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(315): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17134.0\ucrt\stdio.h(208): note: 'fopen' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(316): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17134.0\ucrt\stdio.h(1197): note: 'fscanf' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\paladog\paladog.cpp(1475): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17134.0\ucrt\stdio.h(208): note: 'fopen' 선언을 참조하십시오.
+  코드를 생성하고 있습니다.
+  0 of 532 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
+  코드를 생성했습니다.
+  paladog.vcxproj -> C:\Users\태균\Desktop\2018_1\윈도우 프로그래밍\기말텀프\paladog\Release\paladog.exe

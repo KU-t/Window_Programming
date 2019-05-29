@@ -1,0 +1,1308 @@
+#include <windows.h>
+#include <tchar.h>
+#include "resource.h"
+#include <time.h>
+#include <math.h>
+
+#define WD_Width 800			//윈도우 가로 세로
+#define WD_Height 600			//윈도우 높이
+
+#define START_Frame 51			// 시작화면
+
+#define BOARD_Wsize 20			// 백그라운드 사이즈 가로세로
+#define BOARD_Hsize 15			// 백그라운드 사이즈 높이
+
+#define ENEMY 10				// 적 수
+#define FEED 100					// 먹이 수
+#define ME_FEED 100				// 뱉는 먹이 수
+#define TRAP 10					// 트랩 수
+#define TRAP_size 12			// 트랩 사이즈
+#define FEED_D	50				// 먹이 뱉는 거리
+
+
+#define Animation_frame 30		// 애니메이션 프레임
+#define FEEDout_frame 30		// 먹이뱉기 프레임
+
+#define Feed_size 5				//먹이 크기
+#define ME_size 10				// 내 사이즈 (처음)
+#define Enemy_size 10			// 적 사이즈 (처음)
+#define MOVE_Rate 99/100			// 속도 감소 비율
+#define MOVE_Enemy 5			// 적 초기속도
+#define Mouse_move 8			// 마우스 속도
+
+
+
+HINSTANCE g_hInst;
+LPCTSTR lpszClass = "Window Class Name";
+
+
+
+
+class Circle {
+public:
+	float x, y, r;
+	bool TF;
+
+	COLORREF rgb;
+
+	int Eat;
+	int Move, count;
+	float MOVE;
+
+	bool Trap_ani;
+
+	void start_F() { TF = FALSE; }
+	void start_color1() { rgb = RGB(255, 125, 125); }
+	void start_color2() { rgb = RGB(125, 255, 125); }
+	void start_color3() { rgb = RGB(125, 125, 255); }
+	void start_colorEnemy() { rgb = RGB(255, 0, 0); }
+
+
+
+
+	void move_Enemy() {		// 적 이동 --------------------------------------------------------------
+		switch (Move) {
+		case 1:
+			if (y - r >= 0)			y -= MOVE;
+			else if (y - r < 0)					Move = 5;
+			break;
+		case 2:
+			if (y - r >= 0 && x + r <= WD_Width - 4) { y -= MOVE; x += MOVE; }
+			else if (y - r < 0)					Move = 4;
+			else if (x + r > WD_Width - 4)			Move = 8;
+			break;
+		case 3:
+			if (x + r <= WD_Width - 4)			x += MOVE;
+			else if (x + r > WD_Width - 4)			Move = 7;
+			break;
+		case 4:
+			if (y + r <= WD_Height && x + r <= WD_Width - 4) { y += MOVE; x += MOVE; }
+			else if (y + r > WD_Height)			Move = 2;
+			else if (x + r > WD_Width - 4)			Move = 6;
+			break;
+		case 5:
+			if (y + r <= WD_Height)			y += MOVE;
+			else if (y + r >WD_Height)			Move = 1;
+			break;
+		case 6:
+			if (y + r <= WD_Height && x - r >= 0) { y += MOVE; x -= MOVE; }
+			else if (y + r > WD_Height)			Move = 8;
+			else if (x - r < 0)					Move = 4;
+			break;
+		case 7:
+			if (x - r >= 0)			x -= MOVE;
+			else if (x - r < 0)	Move = 3;
+			break;
+		case 8:
+			if (y - r >= 0 && x - r >= 0) { y -= MOVE; x -= MOVE; }
+			else if (y - r < 0)	Move = 6;
+			else if (x - r < 0)	Move = 2;
+			break;
+		}
+	}
+
+
+
+};
+
+bool Collision(Circle c1, Circle c2);
+void ME_Eating(Circle &c, Circle &a);
+void ENEMY_Eating(Circle &c, Circle &a);
+void Runaway(Circle &a, Circle &b);
+void ME_copy(Circle a, Circle b);
+
+
+LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpszCmdParam, int nCmdShow) {
+
+	HWND hWnd;
+	MSG Message;
+	WNDCLASSEX WndClass;
+	g_hInst = hInstance;
+
+
+	WndClass.cbSize = sizeof(WndClass);
+	WndClass.style = CS_HREDRAW | CS_VREDRAW;
+	WndClass.lpfnWndProc = (WNDPROC)WndProc;
+	WndClass.cbClsExtra = 0;
+	WndClass.cbWndExtra = 0;
+	WndClass.hInstance = hInstance;
+	WndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	WndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	WndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	WndClass.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
+	WndClass.lpszClassName = lpszClass;
+	WndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+
+	RegisterClassEx(&WndClass);
+
+	hWnd = CreateWindow(lpszClass, "AGAIO-", WS_SYSMENU, 0, 0, WD_Width + 17, WD_Height + 40, NULL, (HMENU)NULL, hInstance, NULL);
+
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
+
+	while (GetMessage(&Message, 0, 0, 0)) {
+		TranslateMessage(&Message);
+		DispatchMessage(&Message);
+	}
+	return Message.wParam;
+
+}
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	srand((unsigned)time(NULL));
+
+	HDC hdc, memdc;
+
+	RECT WD_Rect;		//윈도우 크기 사각형
+	RECT NAME;			// 이름 사각형
+	PAINTSTRUCT ps;
+	HBRUSH hbrush, oldbrush;
+	HPEN hpen, oldpen;
+	BITMAP bmp;
+	HFONT hfont, oldfont;
+
+	POINT p1, p2;
+
+	static int mWidth, mHeight; // 비트맵 사이즈 
+	static HBITMAP hbitmap;
+	static Circle ME[5];
+	static Circle _ME[3];
+	static int ME_count;
+	static int ME_count1,ME_count1switch;
+	static Circle Enemy[ENEMY][3];
+	static Circle Feed[FEED + ME_FEED];
+	static Circle Trap[TRAP];
+	static Circle O;				// 속도측정용 0 먹이
+	static Circle *c, *e, *t;		// 먹이 , 적 , 트랩 포인터
+
+	static float mx, my, Dx, Dy;	// 마우스 위치, ME[0] - 마우스 차이
+
+	static int START_MENU;
+	static int Animation_count;
+	static int Trap_count;
+	static int Timer_switch;
+	static int Feed_switch;
+	static int Feed_count;
+	static int Feed_go;
+	static int time1, time2;
+	static char TIME[10];
+	static char ME_EAT[10];
+
+	static int answer;
+
+	switch (uMsg) {
+	case WM_CREATE:
+
+
+		srand((unsigned)time(NULL));
+		START_MENU = 0;
+		WD_Rect.left = 0; WD_Rect.top = 0; WD_Rect.right = WD_Width; WD_Rect.bottom = WD_Height;
+		ClipCursor(&WD_Rect);
+		ME[0].x = WD_Width / 2;
+		ME[0].y = WD_Height / 2;
+		ME[0].r = ME_size;
+		ME[0].TF = TRUE;
+		ME[0].Eat = 0;
+		ME_Eating(ME[0], O);
+		ME_count = 0;
+		ME_count1 = 0;
+
+		Animation_count = Animation_frame;
+		Trap_count = 100;
+		Timer_switch = 0;
+		Feed_switch = 0;
+		Feed_count = 0;
+		Feed_go = 0;
+
+		O.Eat = 0;
+
+		time1 = 0;
+		time2 = 0;
+
+		ME_count1switch = 0;
+
+		//시작 메뉴 설정 -----------------------------------------
+
+		SetTimer(hWnd, 6, 50, NULL);	// 트랩 움직임
+
+
+
+
+		hbitmap = (HBITMAP)LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP1)); // 비트맵 삽입
+		GetObject(hbitmap, sizeof(BITMAP), &bmp); // 비트맵 사이즈
+		mWidth = bmp.bmWidth;	// 비트맵 사이즈
+		mHeight = bmp.bmHeight;	// 비트맵 사이즈
+
+								// 먹이 설정 ----------------------------------------------
+		c = Feed;
+		for (int i = 0; i < FEED + ME_FEED; i++) {
+			(c + i)->x = (float)(rand() % WD_Width - 17);
+			(c + i)->y = (float)(rand() % WD_Height - 40);
+			(c + i)->TF = TRUE;
+			(c + i)->r = Feed_size;
+			(c + i)->Eat = 1;
+			if (i < FEED / 3)
+				(c + i)->start_color1();
+			else if (i < FEED * 2 / 3)
+				(c + i)->start_color2();
+			else if (i < FEED)
+				(c + i)->start_color3();
+		}
+		for (int i = FEED/2; i < FEED + ME_FEED; i++) {
+			(c + i)->TF = FALSE;
+		}
+
+
+		// 적 설정 -------------------------------------------------
+		e = Enemy[0];
+		for (int i = 0; i < ENEMY; i++) {
+			(e + i)->x = (float)(rand() % WD_Width - 17);
+			(e + i)->y = (float)(rand() % WD_Height - 40);
+			(e + i)->TF = FALSE;
+			(e + i)->r = 0;
+			(e + i)->start_colorEnemy();
+			(e + i)->Eat = 0;
+			(e + i)->Move = rand() % 8 + 1;
+			(e + i)->MOVE = MOVE_Enemy;
+		}
+		(e + 0)->TF = TRUE;
+
+		// 트랩 설정 ----------------------------------
+		t = Trap;
+		for (int i = 0; i < TRAP; i++) {
+			(t + i)->x = (float)(rand() % (WD_Width - 17) + TRAP_size);
+			(t + i)->y = (float)(rand() % (WD_Height - 40) + TRAP_size);
+			(t + i)->TF = FALSE;
+			(t + i)->r = TRAP_size;
+			(t + i)->Move = rand() % 8 + 1;
+			(t + i)->MOVE = MOVE_Enemy;
+			(t + i)->Trap_ani = FALSE;
+		}
+
+		for (int i = 0; i < 3; i++) {
+			(t + i)->TF = TRUE;
+			(t + i)->Trap_ani = FALSE;
+		}
+
+
+
+
+		break;
+
+	case WM_MOUSEMOVE:
+		mx = LOWORD(lParam);
+		
+		my = HIWORD(lParam);
+		
+
+		GetClientRect(hWnd, &WD_Rect);
+		p1.x = WD_Rect.left;	p1.y = WD_Rect.top-30;
+		p2.x = WD_Rect.right;	p2.y = WD_Rect.bottom;
+		ClientToScreen(hWnd, &p1);	ClientToScreen(hWnd, &p2);
+		WD_Rect.left = p1.x;	WD_Rect.top = p1.y;
+		WD_Rect.right = p2.x;	WD_Rect.bottom = p2.y;
+		ClipCursor(&WD_Rect);
+
+
+
+		break;
+
+	case WM_PAINT:
+
+		
+
+		// -------------------------------------------
+
+		hdc = BeginPaint(hWnd, &ps);
+		memdc = CreateCompatibleDC(hdc);
+
+		hbitmap = CreateCompatibleBitmap(hdc, WD_Width, WD_Height);
+		SelectObject(memdc, hbitmap);
+
+		// 클라이언트내 커서 고정---------------------------------------
+		GetClientRect(hWnd, &WD_Rect);
+		p1.x = WD_Rect.left;	p1.y = WD_Rect.top - 30;
+		p2.x = WD_Rect.right;	p2.y = WD_Rect.bottom;
+		ClientToScreen(hWnd, &p1);	ClientToScreen(hWnd, &p2);
+		WD_Rect.left = p1.x;	WD_Rect.top = p1.y;
+		WD_Rect.right = p2.x;	WD_Rect.bottom = p2.y;
+		ClipCursor(&WD_Rect);
+
+		if (START_MENU == 0) {
+
+			srand((unsigned)time(NULL));
+			START_MENU = 0;
+			WD_Rect.left = 0; WD_Rect.top = 0; WD_Rect.right = WD_Width; WD_Rect.bottom = WD_Height;
+			ClipCursor(&WD_Rect);
+			ME[0].x = WD_Width / 2;
+			ME[0].y = WD_Height / 2;
+			ME[0].r = ME_size;
+			ME[0].TF = TRUE;
+			ME[0].Eat = 0;
+			ME_Eating(ME[0], O);
+			ME_count = 0;
+			ME_count1 = 0;
+
+			Animation_count = Animation_frame;
+			Trap_count = 100;
+			Timer_switch = 0;
+			Feed_switch = 0;
+			Feed_count = 0;
+			Feed_go = 0;
+
+			O.Eat = 0;
+
+			time1 = 0;
+			time2 = 0;
+
+			ME_count1switch = 0;
+
+			//시작 메뉴 설정 -----------------------------------------
+
+			SetTimer(hWnd, 6, 50, NULL);	// 트랩 움직임
+
+
+
+
+			hbitmap = (HBITMAP)LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP1)); // 비트맵 삽입
+			GetObject(hbitmap, sizeof(BITMAP), &bmp); // 비트맵 사이즈
+			mWidth = bmp.bmWidth;	// 비트맵 사이즈
+			mHeight = bmp.bmHeight;	// 비트맵 사이즈
+
+									// 먹이 설정 ----------------------------------------------
+			c = Feed;
+			for (int i = 0; i < FEED + ME_FEED; i++) {
+				(c + i)->x = (float)(rand() % WD_Width - 17);
+				(c + i)->y = (float)(rand() % WD_Height - 40);
+				(c + i)->TF = TRUE;
+				(c + i)->r = Feed_size;
+				(c + i)->Eat = 1;
+				if (i < FEED / 3)
+					(c + i)->start_color1();
+				else if (i < FEED * 2 / 3)
+					(c + i)->start_color2();
+				else if (i < FEED)
+					(c + i)->start_color3();
+			}
+			for (int i = FEED / 2; i < FEED + ME_FEED; i++) {
+				(c + i)->TF = FALSE;
+			}
+
+
+			// 적 설정 -------------------------------------------------
+			e = Enemy[0];
+			for (int i = 0; i < ENEMY; i++) {
+				(e + i)->x = (float)(rand() % WD_Width - 17);
+				(e + i)->y = (float)(rand() % WD_Height - 40);
+				(e + i)->TF = FALSE;
+				(e + i)->r = 0;
+				(e + i)->start_colorEnemy();
+				(e + i)->Eat = 0;
+				(e + i)->Move = rand() % 8 + 1;
+				(e + i)->MOVE = MOVE_Enemy;
+			}
+			(e + 0)->TF = TRUE;
+
+			// 트랩 설정 ----------------------------------
+			t = Trap;
+			for (int i = 0; i < TRAP; i++) {
+				(t + i)->x = (float)(rand() % (WD_Width - 17) + TRAP_size);
+				(t + i)->y = (float)(rand() % (WD_Height - 40) + TRAP_size);
+				(t + i)->TF = FALSE;
+				(t + i)->r = TRAP_size;
+				(t + i)->Move = rand() % 8 + 1;
+				(t + i)->MOVE = MOVE_Enemy;
+				(t + i)->Trap_ani = FALSE;
+			}
+
+			for (int i = 0; i < 3; i++) {
+				(t + i)->TF = TRUE;
+				(t + i)->Trap_ani = FALSE;
+			}
+
+			hbrush = CreateSolidBrush(RGB(150, 150, 200)); //
+			oldbrush = (HBRUSH)SelectObject(memdc, hbrush); //
+			Rectangle(memdc, 0, 0, WD_Width, WD_Height);
+			SelectObject(memdc, oldbrush); //
+			DeleteObject(hbrush); //
+
+			hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0)); //		//선
+			oldpen = (HPEN)SelectObject(memdc, hpen);	//
+			hbrush = CreateSolidBrush(RGB(150, 150, 150));	//			// 면
+			oldbrush = (HBRUSH)SelectObject(memdc, hbrush);	//
+			hfont = CreateFont(200, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+			oldfont = (HFONT)SelectObject(memdc, hfont);	//
+			SetBkColor(memdc, RGB(150, 150, 200));	
+			SetTextColor(memdc, RGB(255, 0, 0));
+			TextOut(memdc, WD_Width * 2 / 5, WD_Height * 2 / 8, "Agar.io", 7);
+			SelectObject(memdc, oldpen);	//
+			SelectObject(memdc, oldbrush);	//
+			SelectObject(memdc, oldfont);	//
+			DeleteObject(hbrush);	
+			DeleteObject(hpen);
+			DeleteObject(SelectObject(memdc, hfont));
+
+			hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));		//선
+			oldpen = (HPEN)SelectObject(memdc, hpen);
+			hbrush = CreateSolidBrush(RGB(150, 150, 150));			// 면
+			oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+			hfont = CreateFont(50, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+			oldfont = (HFONT)SelectObject(memdc, hfont);
+			SetBkColor(memdc, RGB(150, 150, 200));
+			SetTextColor(memdc, RGB(0, 0, 255));
+			TextOut(memdc, WD_Width * 23 / 40, WD_Height * 16 / 24, "S T A R T", 9);			
+			SelectObject(memdc, oldpen);
+			SelectObject(memdc, oldbrush);
+			SelectObject(memdc, oldfont);
+			DeleteObject(hbrush);
+			DeleteObject(hpen);
+			DeleteObject(SelectObject(memdc, hfont));
+
+			hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));		//선
+			oldpen = (HPEN)SelectObject(memdc, hpen);
+			hbrush = CreateSolidBrush(RGB(150, 150, 150));			// 면
+			oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+			hfont = CreateFont(50, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+			oldfont = (HFONT)SelectObject(memdc, hfont);
+			SetBkColor(memdc, RGB(150, 150, 200));
+			SetTextColor(memdc, RGB(0, 0, 255));
+			TextOut(memdc, WD_Width * 24 / 40, WD_Height * 19 / 24, "E X I T", 7);			
+			SelectObject(memdc, oldpen);
+			SelectObject(memdc, oldbrush);
+			SelectObject(memdc, oldfont);
+			DeleteObject(hbrush);
+			DeleteObject(hpen);
+			DeleteObject(SelectObject(memdc, hfont));
+
+			hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));		//선
+			oldpen = (HPEN)SelectObject(memdc, hpen);
+			hbrush = CreateSolidBrush(RGB(150, 150, 150));			// 면
+			oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+			hfont = CreateFont(20, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+			oldfont = (HFONT)SelectObject(memdc, hfont);
+			SetBkColor(memdc, RGB(150, 150, 200));
+			SetTextColor(memdc, RGB(0, 0, 0));
+			TextOut(memdc, WD_Width * 2 / 24, WD_Height * 21 / 24, "2014132002 구태균", 17);
+			SelectObject(memdc, oldpen);
+			SelectObject(memdc, oldbrush);
+			SelectObject(memdc, oldfont);
+			DeleteObject(hbrush);
+			DeleteObject(hpen);
+			DeleteObject(SelectObject(memdc, hfont));
+
+			if (mx >= WD_Width * 23 / 40 && mx <= WD_Width * 34 / 40 && my >= WD_Height * 16 / 24 && my <= WD_Height * 18 / 24) {
+				hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));		//선
+				oldpen = (HPEN)SelectObject(memdc, hpen);
+				hbrush = CreateSolidBrush(RGB(150, 150, 150));			// 면
+				oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+				hfont = CreateFont(50, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+				oldfont = (HFONT)SelectObject(memdc, hfont);
+				SetBkColor(memdc, RGB(150, 150, 200));
+				SetTextColor(memdc, RGB(255, 0, 0));
+				TextOut(memdc, WD_Width * 23 / 40, WD_Height * 16 / 24, "S T A R T", 9);			
+				SelectObject(memdc, oldpen);
+				SelectObject(memdc, oldbrush);
+				SelectObject(memdc, oldfont);
+				DeleteObject(hbrush);
+				DeleteObject(hpen);
+				DeleteObject(SelectObject(memdc, hfont));
+			}
+
+			if (mx >= WD_Width * 24 / 40 && mx <= WD_Width * 33 / 40 && my >= WD_Height * 19 / 24 && my <= WD_Height * 21 / 24) {
+				hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));		//선
+				oldpen = (HPEN)SelectObject(memdc, hpen);
+				hbrush = CreateSolidBrush(RGB(150, 150, 150));			// 면
+				oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+				hfont = CreateFont(50, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+				oldfont = (HFONT)SelectObject(memdc, hfont);
+				SetBkColor(memdc, RGB(150, 150, 200));
+				SetTextColor(memdc, RGB(255, 0, 0));
+				TextOut(memdc, WD_Width * 24 / 40, WD_Height * 19 / 24, "E X I T", 7);			
+				SelectObject(memdc, oldpen);
+				SelectObject(memdc, oldbrush);
+				SelectObject(memdc, oldfont);
+				DeleteObject(hbrush);
+				DeleteObject(hpen);
+				DeleteObject(SelectObject(memdc, hfont));
+			}
+		}
+
+		else if (START_MENU == 3) {
+			// 타이머 설정 ---------------------------------------------------
+
+			SetTimer(hWnd, 1, 500, NULL);	// 먹이생성
+			SetTimer(hWnd, 2, 50, NULL);	// ME[0]움직임
+			SetTimer(hWnd, 3, 3000, NULL);	// 적생성
+			SetTimer(hWnd, 4, 50, NULL);	// 적움직임
+			SetTimer(hWnd, 5, 10000, NULL);	// 트랩생성
+			SetTimer(hWnd, 6, 50, NULL);	// 트랩 움직임
+			SetTimer(hWnd, 8, 10, NULL);	// 시간 타이머
+			START_MENU = 1;
+		}
+
+
+
+		else if (START_MENU == 1) {
+
+
+
+			// 백그라운드 이미지 ----------------------------------------------------------
+			hpen = CreatePen(PS_SOLID, 1, RGB(155, 200, 155));		//선
+
+			oldpen = (HPEN)SelectObject(memdc, hpen);
+
+			hbrush = CreateSolidBrush(RGB(250, 250, 200));			// 면
+
+			oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+
+			for (int i = 0; i < BOARD_Wsize; i++)
+			{
+				for (int j = 0; j < BOARD_Hsize; j++)
+				{
+					Rectangle(memdc, i*WD_Width / BOARD_Wsize, j*WD_Height / BOARD_Hsize, (i + 1)*WD_Width / BOARD_Wsize, (j + 1)*WD_Height / BOARD_Hsize);
+				}
+			}
+			SelectObject(memdc, oldpen);
+			SelectObject(memdc, oldbrush);
+			DeleteObject(hbrush);
+			DeleteObject(hpen);
+			// ---------------------------------------------------------------------------------
+
+
+			// 먹이 생성 --------------------------------------------------------------------
+			for (int i = 0; i < FEED + ME_FEED; i++) {
+				if ((c + i)->TF == TRUE) {
+					hpen = CreatePen(PS_SOLID, 2, (c + i)->rgb);
+
+					oldpen = (HPEN)SelectObject(memdc, hpen);
+
+					Ellipse(memdc, (int)((c + i)->x - Feed_size), (int)((c + i)->y - Feed_size), (int)((c + i)->x + Feed_size), (int)((c + i)->y + Feed_size));
+
+					SelectObject(memdc, oldpen);
+
+					DeleteObject(hpen);
+				}
+			}
+			// ---------------------------------------------------------------------------------
+
+
+
+
+
+
+			// ME[0] 생성 -----------------------------------------------------------------------
+			
+
+			if (ME_count == 1  && ME_count1switch == 1) {
+				SetTimer(hWnd, 9, 400, NULL);
+				ME_count1switch = 2;
+			}
+
+			if (ME_count == 2 && ME_count1switch == 1) {
+				SetTimer(hWnd, 9, 400, NULL);
+				ME_count1switch = 2;
+			}
+
+			else if (ME_count == 1 && ME_count1switch == 2) {
+				if (ME_count1 == 10) {
+					KillTimer(hWnd, 9);
+					ME_count1 = 0;
+					ME_count = 0;
+					ME_count1switch = 0;
+					ME_copy(ME[0], _ME[0]);
+					ME[0].Eat += ME[1].Eat;
+					ME_Eating(ME[0], O);
+					ME[1].TF = FALSE;
+				}
+			}
+
+			else if (ME_count == 2 && ME_count1switch == 2) {
+				if (ME_count1 == 10) {
+					KillTimer(hWnd, 9);
+					ME_count1 = 0;
+					ME_count = 0;
+					ME_count1switch = 0;
+					//ME_copy(ME[0], _ME[0]);
+					ME[0].Eat = ME[0].Eat + ME[1].Eat + ME[2].Eat + ME[3].Eat;
+					ME_Eating(ME[0], O);
+					ME[1].TF = FALSE;
+					ME[2].TF = FALSE;
+					ME[3].TF = FALSE;
+
+				}
+			}
+
+			for (int m = 0; m < 2 * ME_count + 1; m++) {
+				if (ME[m].TF == TRUE) {
+					hpen = CreatePen(PS_SOLID, 2, RGB(0, 120, 120));
+					hbrush = CreateSolidBrush(RGB(120, 240, 240));
+
+					oldpen = (HPEN)SelectObject(memdc, hpen);
+					oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+
+					Ellipse(memdc, (int)(ME[m].x - ME[m].r), (int)(ME[m].y - ME[m].r), (int)(ME[m].x + ME[m].r), (int)(ME[m].y + ME[m].r));
+
+
+					SelectObject(memdc, oldpen);
+					SelectObject(memdc, oldbrush);
+
+					DeleteObject(hpen);
+					DeleteObject(hbrush);
+				}
+			
+
+
+				// ME[0] - 먹은 적 좌표 재설정
+				for (int i = 0; i < ENEMY; i++) {
+					if ((e + i)->r > ME[m].r) {
+						if (!Collision(ME[m], *(e + i))) {
+							ME[m].TF = FALSE;
+							ME[m].Eat = 0;
+							if (ME[0].TF == FALSE && ME[1].TF == FALSE && ME[2].TF == FALSE && ME[3].TF == FALSE)
+								START_MENU = 3;
+							break;
+						}
+					}
+
+					if ((e + i)->TF == TRUE) {
+						(e + i)->TF = Collision(ME[m], *(e + i));
+
+						if ((e + i)->TF == FALSE) {
+							(e + i)->r = 0;
+							(e + i)->x = (float)(rand() % WD_Width - 17);
+							(e + i)->y = (float)(rand() % WD_Height - 40);
+							ME_Eating(ME[m], *(e + i));
+						}
+					}
+
+					// ME - 트랩 충돌 ------------------------------------------------
+					for (int j = 0; j < TRAP; j++) {
+						if ((t + j)->TF == TRUE && (t + j)->Trap_ani == FALSE && ME[m].TF == TRUE) {
+
+							if (ME[m].r > (t + j)->r) {
+								(t + j)->TF = Collision(ME[m], *(t + j));
+								if ((t + j)->TF == FALSE) {
+									if ((ME_count == 0 || ME_count == 1) && ME[0].Eat > 15) {
+										ME_count++;
+
+										if (ME_count == 1) {
+											ME_copy(_ME[0], ME[0]);
+
+											ME[1].Eat = ME[0].Eat / 2;
+											ME[0].Eat = ME[0].Eat / 2 + ME[0].Eat % 2;
+											ME[1].TF = TRUE;
+
+											ME_Eating(ME[0], O);
+											ME_Eating(ME[1], O);
+
+											ME[1].x = ME[0].x + 2 * (ME[0].r + ME[1].r);
+											ME[1].y = ME[0].y + 2 * (ME[0].r + ME[1].r);
+
+
+											ME_count1switch = 1;
+										}
+
+										else if (ME_count == 2) {
+											ME_copy(_ME[1], ME[0]);
+											ME_copy(_ME[2], ME[1]);
+
+											ME[2].Eat = ME[0].Eat / 2;
+											ME[0].Eat = ME[0].Eat / 2 + ME[0].Eat % 2;
+											ME[3].Eat = ME[1].Eat / 2;
+											ME[1].Eat = ME[1].Eat / 2 + ME[1].Eat % 2;
+											ME[1].TF = TRUE;
+											ME[2].TF = TRUE;
+											ME[3].TF = TRUE;
+
+											ME_Eating(ME[0], O);
+											ME_Eating(ME[1], O);
+											ME_Eating(ME[2], O);
+											ME_Eating(ME[3], O);
+
+											ME[2].x = ME[0].x + 2 * (ME[0].r + ME[1].r);
+											ME[2].y = ME[0].y;
+
+											ME[3].x = ME[0].x;
+											ME[3].y = ME[0].y + 2 * (ME[0].r + ME[1].r);
+
+											ME_count1switch = 1;
+										}
+									}
+								}
+							}
+						}
+					}
+
+				}
+
+				for (int i = 0; i < FEED + ME_FEED; i++) {
+					if ((c + i)->TF == TRUE) {
+						(c + i)->TF = Collision(ME[m], *(c + i));
+						if ((c + i)->TF == FALSE) {						// ME[0] - 먹이 좌표 재설정
+							ME_Eating(ME[m], *(c + i));
+							(c + i)->x = (float)(rand() % WD_Width - 17);
+							(c + i)->y = (float)(rand() % WD_Height - 40);
+							(c + i)->Eat = 0;
+						}
+					}
+				}
+
+			
+			}
+
+			// 적 생성 --------------------------------------------------------------------
+			for (int i = 0; i < ENEMY; i++) {
+				for (int j = 0; j < FEED + ME_FEED; j++) {
+					if ((e + i)->TF == TRUE) {
+						if ((c + j)->TF == TRUE) {
+							(c + j)->TF = Collision(*(e + i), *(c + j));	// 적 - 먹이 충돌체크
+
+							if ((c + j)->TF == FALSE) {						// 먹은 먹이 좌표 재설정
+								ENEMY_Eating(*(e + i), *(c + j));
+								(c + j)->x = (float)(rand() % WD_Width - 17);
+								(c + j)->y = (float)(rand() % WD_Height - 40);
+								(c + j)->Eat = 0;
+
+							}
+						}
+					}
+					// 적 - 트랩 충돌 ----------------------------------------
+					for (int j = 0; j < TRAP; j++) {
+						if ((t + j)->TF == TRUE && (t + j)->Trap_ani == FALSE && (e + i)->TF == TRUE) {
+							if ((e + i)->r < (t + j)->r) {
+								(e + i)->TF = Collision(*(e + i), *(t + j));
+								if ((e + i)->TF == FALSE) {
+									(e + i)->Eat = 0;
+									(e + i)->r = 0;
+								}
+							}
+
+
+							if ((e + i)->r > (t + j)->r) {
+								(t + j)->TF = Collision(*(e + i), *(t + j));
+								if ((t + i)->TF == FALSE) {
+									
+								}	
+							}
+						}
+					}
+
+
+					for (int j = i; j < ENEMY; j++) {				// 적 - 적 충돌 ----------------------------------
+
+						if ((e + i)->TF == TRUE && (e + j)->TF == TRUE) {
+							if ((e + i)->r >(e + j)->r) {				// 사이즈에 따라 (1)
+								(e + j)->TF = Collision(*(e + i), *(e + j));
+								if ((e + j)->TF == FALSE) {
+									ENEMY_Eating(*(e + i), *(e + j));
+									(e + j)->Eat = 0;
+									(e + j)->r = 0;
+								}
+							}
+
+
+							if ((e + i)->TF == TRUE && (e + j)->TF == TRUE) {
+								if ((e + i)->r < (e + j)->r) {				// 사이즈에 따라 (2)
+									(e + i)->TF = Collision(*(e + i), *(e + j));
+									if ((e + i)->TF == FALSE) {
+										ENEMY_Eating(*(e + j), *(e + i));
+										(e + i)->Eat = 0;
+										(e + i)->r = 0;
+									}
+								}
+							}
+						}
+					}
+				}
+
+				// 적 생성
+				if ((e + i)->TF == TRUE) {
+					hpen = CreatePen(PS_SOLID, 2, (e + i)->rgb);
+					hbrush = CreateSolidBrush(RGB(255, 125, 125));
+					oldpen = (HPEN)SelectObject(memdc, hpen);
+					oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+					Ellipse(memdc, (int)((e + i)->x - (e + i)->r), (int)((e + i)->y - (e + i)->r), (int)((e + i)->x + (e + i)->r), (int)((e + i)->y + (e + i)->r));
+					SelectObject(memdc, oldpen);
+					SelectObject(memdc, oldbrush);
+					DeleteObject(hpen);
+					DeleteObject(hbrush);
+				}
+			}
+
+			// 트랩 애니메이션 -----------------------------------------
+			if (Timer_switch == 1) {
+				SetTimer(hWnd, 7, 100, NULL);	// 애니메이션
+				Timer_switch = 2;
+			}
+
+			else if (Timer_switch == 2) {
+				hpen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
+				oldpen = (HPEN)SelectObject(memdc, hpen);
+				hbrush = CreateSolidBrush(RGB(150, 150, 255));
+				oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+				Ellipse(memdc, (int)((t + Trap_count)->x + Animation_count + TRAP_size), (int)((t + Trap_count)->y + Animation_count + TRAP_size), (int)((t + Trap_count)->x - Animation_count - TRAP_size), (int)((t + Trap_count)->y - Animation_count - TRAP_size));
+				SelectObject(memdc, oldpen);
+				SelectObject(memdc, oldbrush);
+				DeleteObject(hpen);
+				DeleteObject(hbrush);
+			}
+
+
+			if (Animation_count == 0) {
+				KillTimer(hWnd, 7);
+				Animation_count = Animation_frame;
+				(t + Trap_count)->Trap_ani = FALSE;
+				Trap_count = 100;
+				Timer_switch = 0;
+			}
+
+
+
+			// 트랩 생성 ----------------------------------------------
+			for (int i = 0; i < TRAP; i++) {
+				if ((t + i)->TF == TRUE && (t + i)->Trap_ani == FALSE) {
+					hpen = CreatePen(PS_SOLID, 3, RGB(20, 20, 20));
+					hbrush = CreateSolidBrush(RGB(150, 150, 255));
+
+					oldpen = (HPEN)SelectObject(memdc, hpen);
+					oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+
+					Ellipse(memdc, (int)((t + i)->x - (t + i)->r), (int)((t + i)->y - (t + i)->r), (int)((t + i)->x + (t + i)->r), (int)((t + i)->y + (t + i)->r));
+
+					SelectObject(memdc, oldpen);
+					SelectObject(memdc, oldbrush);
+					DeleteObject(hbrush);
+					DeleteObject(hpen);
+
+					hbrush = CreateSolidBrush(RGB(50, 50, 50));
+					oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+
+					Ellipse(memdc, (int)((t + i)->x - (t + i)->r + 5), (int)((t + i)->y - (t + i)->r + 5), (int)((t + i)->x + (t + i)->r - 5), (int)((t + i)->y + (t + i)->r - 5));
+
+					SelectObject(memdc, oldbrush);
+
+					DeleteObject(hbrush);
+
+				}
+			}
+
+
+			// 먹은 먹이 출력 ----------------------------------------------------------
+			wsprintf(ME_EAT, "SIZE : %d", ME[0].Eat+ME[1].Eat+ME[2].Eat + ME[3].Eat);
+			hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));		//선
+			oldpen = (HPEN)SelectObject(memdc, hpen);
+			hbrush = CreateSolidBrush(RGB(250, 250, 200));			// 면
+			oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+			hfont = CreateFont(20, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+			oldfont = (HFONT)SelectObject(memdc, hfont);
+			SetBkColor(memdc, RGB(250, 250, 200));
+			SetTextColor(memdc, RGB(255, 0, 0));
+			TextOut(memdc, WD_Width * 35 / 40, 0, ME_EAT, strlen(ME_EAT));
+			SelectObject(memdc, hpen);
+			SelectObject(memdc, oldbrush);
+			SelectObject(memdc, oldfont);
+			DeleteObject(hbrush);
+			DeleteObject(hpen);
+			DeleteObject(SelectObject(memdc, hfont));
+			// 시간 출력 ---------------------------------------------------------
+
+			wsprintf(TIME, "TIME : %d.%d", time1, time2);
+			hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));		//선
+			oldpen = (HPEN)SelectObject(memdc, hpen);
+			hbrush = CreateSolidBrush(RGB(250, 250, 200));			// 면
+			oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+			hfont = CreateFont(20, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+			oldfont = (HFONT)SelectObject(memdc, hfont);
+			SetBkColor(memdc, RGB(250, 250, 200));
+			SetTextColor(memdc, RGB(255, 0, 0));
+			TextOut(memdc, 0, 0, TIME, strlen(TIME));
+			SelectObject(memdc, oldpen);
+			SelectObject(memdc, oldbrush);
+			SelectObject(memdc, oldfont);
+			DeleteObject(hbrush);
+			DeleteObject(hpen);
+			DeleteObject(SelectObject(memdc, hfont));
+
+			if (START_MENU == 3) {
+				for (int i = 1; i < 10; i++) {
+					KillTimer(hWnd, i);
+				}
+				hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));			//선
+				oldpen = (HPEN)SelectObject(memdc, hpen);
+				hbrush = CreateSolidBrush(RGB(250, 250, 200));			// 면
+				oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+				hfont = CreateFont(200, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+				oldfont = (HFONT)SelectObject(memdc, hfont);
+				SetBkColor(memdc, RGB(250, 250, 200));
+				SetTextColor(memdc, RGB(255, 0, 0));
+				TextOut(memdc, WD_Width / 2 - 200, WD_Height / 2 - 100, "THE__END", 8);
+				SelectObject(memdc, oldpen);
+				SelectObject(memdc, oldbrush);
+				SelectObject(memdc, oldfont);
+				DeleteObject(hbrush);
+				DeleteObject(hpen);
+				DeleteObject(SelectObject(memdc, hfont));
+
+				wsprintf(TIME, "TIME : %d.%d", time1, time2);
+				hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));		//선
+				oldpen = (HPEN)SelectObject(memdc, hpen);
+				hbrush = CreateSolidBrush(RGB(250, 250, 200));			// 면
+				oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+				hfont = CreateFont(50, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+				oldfont = (HFONT)SelectObject(memdc, hfont);
+				SetBkColor(memdc, RGB(250, 250, 200));
+				SetTextColor(memdc, RGB(255, 0, 0));
+				TextOut(memdc, WD_Width / 2 - 133, WD_Height / 2 + 80, TIME, strlen(TIME));
+				SelectObject(memdc, oldpen);
+				SelectObject(memdc, oldbrush);
+				SelectObject(memdc, oldfont);
+				DeleteObject(hbrush);
+				DeleteObject(hpen);
+				DeleteObject(SelectObject(memdc, hfont));
+
+				hpen = CreatePen(PS_SOLID, 10, RGB(0, 0, 0));			//선
+				oldpen = (HPEN)SelectObject(memdc, hpen);
+				hbrush = CreateSolidBrush(RGB(250, 250, 200));			// 면
+				oldbrush = (HBRUSH)SelectObject(memdc, hbrush);
+				hfont = CreateFont(20, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("Fixedsys"));
+				oldfont = (HFONT)SelectObject(memdc, hfont);
+				SetBkColor(memdc, RGB(250, 250, 200));
+				SetTextColor(memdc, RGB(0, 0, 0));
+				TextOut(memdc, WD_Width / 2 - 150, WD_Height - 20, "계속 하시려면 ESC를 누르세요....", 32);
+				SelectObject(memdc, oldpen);
+				SelectObject(memdc, oldbrush);
+				SelectObject(memdc, oldfont);
+
+				DeleteObject(hbrush);
+				DeleteObject(hpen);
+				DeleteObject(SelectObject(memdc, hfont));
+			}
+		}
+
+		StretchBlt(hdc, 0, 0, WD_Width, WD_Height, memdc, 0, 0, mWidth, mHeight, SRCCOPY);
+
+		DeleteDC(memdc);
+		DeleteObject(hbitmap);
+		EndPaint(hWnd, &ps);
+		break;
+
+	case WM_TIMER:
+		switch (wParam) {
+		case 1:	// 먹이생성
+			for (int i = 0; i < FEED; i++) {
+				if ((c + i)->TF == FALSE) {
+					(c + i)->TF = TRUE;
+					(c + i)->Eat = 1;
+					break;
+				}
+			}
+			break;
+
+		case 2:	// ME[0] 움직임
+			for (int i = 0; i < 2*ME_count+1; i++) {
+				if (ME[i].x != mx && ME[i].y != my) {
+					Dx = ME[i].x - mx;
+					Dy = ME[i].y - my;
+
+					ME[i].x -= (float)(Dx / sqrt(Dx*Dx + Dy * Dy)*ME[i].MOVE);
+					if (ME[i].x - mx < Dx / sqrt(Dx*Dx + Dy * Dy)*Mouse_move  && ME[0].x - mx > -Dx / sqrt(Dx*Dx + Dy * Dy)*Mouse_move)
+						ME[i].x = mx;
+					ME[i].y -= (float)(Dy / sqrt(Dx*Dx + Dy * Dy)*ME[0].MOVE);
+					if (ME[i].y - my < Dy / sqrt(Dx*Dx + Dy * Dy)*Mouse_move  && ME[0].y - my > -Dy / sqrt(Dx*Dx + Dy * Dy)*Mouse_move)
+						ME[i].y = my;
+				}
+			}
+			
+			break;
+
+		case 3:	// 적 생성
+			for (int i = 0; i < ENEMY; i++) {
+				if ((e + i)->TF == FALSE) {
+					(e + i)->x = (float)(rand() % WD_Width - 17);
+					(e + i)->y = (float)(rand() % WD_Height - 40);
+					(e + i)->TF = TRUE;
+					(e + i)->r = Enemy_size;
+					(e + i)->Move = rand() % 8 + 1;
+					break;
+				}
+			}
+			break;
+
+		case 4:	// 적 Move
+			for (int i = 0; i < ENEMY; i++) {
+				if ((e + i)->TF == TRUE) {
+					ENEMY_Eating(*(e + i), O);
+					(e + i)->move_Enemy();
+				}
+			}
+			break;
+
+		case 5:	// 트랩 생성
+			for (int i = 0; i < TRAP; i++) {
+				if ((t + i)->TF == FALSE) {
+					(t + i)->TF = TRUE;
+					(t + i)->Trap_ani = TRUE;
+					Timer_switch = 1;
+					Trap_count = i;
+					break;
+				}
+			}
+			break;
+
+		case 6:	// 트랩 움직임
+			for (int i = 0; i < TRAP; i++) {
+				if ((t + i)->TF == TRUE) {
+					(t + i)->move_Enemy();
+				}
+			}
+			break;
+
+		case 7:	// 트랩 애니메이션
+			Animation_count--;
+			if (Animation_count < 0) {
+				Animation_count = 0;
+			}
+			break;
+
+		case 8:	// 시간 측정
+			if (time2 < 99) {
+				time2++;
+			}
+			else if (time2 == 99) {
+				time1++;
+				time2 = 0;
+			}
+			break;
+
+		case 9:	// ME 2개 분열 합치기
+			if(ME_count1 < 10)
+				ME_count1++;
+			break;
+
+		}
+
+
+		InvalidateRect(hWnd, NULL, FALSE);
+		break;
+
+	case WM_KEYUP:
+		switch (wParam) {
+		case VK_ESCAPE:
+			if (START_MENU == 3) {
+				START_MENU = 0;
+			}
+			break;
+		}
+		InvalidateRect(hWnd, NULL, FALSE);
+		break;
+
+	case WM_RBUTTONUP:
+		if (START_MENU == 1) {
+			if (ME[0].Eat > 0 && Feed_count < ME_FEED) {
+				ME[0].Eat--;
+				Feed_count++;
+				if (Feed_count == ME_FEED)
+					Feed_count = 0;
+
+				(c + FEED + Feed_count)->x = ME[0].x + ME[0].r - (ME[0].x - mx) * 8 / 10;
+				(c + FEED + Feed_count)->y = ME[0].y + ME[0].r - (ME[0].y - my) * 8 / 10;
+				(c + FEED + Feed_count)->TF = TRUE;
+				(c + FEED + Feed_count)->rgb = RGB(125, 125, 125);
+				ME_Eating(ME[0], O);
+			}
+		}
+
+		
+		InvalidateRect(hWnd, NULL, FALSE);
+		break;
+
+	case WM_LBUTTONUP:
+		if (START_MENU == 0) {
+			if (mx >= WD_Width * 23 / 40 && mx <= WD_Width * 34 / 40 && my >= WD_Height * 16 / 24 && my <= WD_Height * 18 / 24) {
+				START_MENU = 3;
+			}
+			if (mx >= WD_Width * 24 / 40 && mx <= WD_Width * 33 / 40 && my >= WD_Height * 19 / 24 && my <= WD_Height * 21 / 24) {
+				exit(1);
+			}
+		}
+		if (START_MENU == 1) {
+			
+
+			if ((ME_count == 0 || ME_count == 1) && ME[0].Eat > 15) {
+				ME_count ++;
+
+				if (ME_count == 1) {
+					ME_copy(_ME[0], ME[0]);
+
+					ME[1].Eat = ME[0].Eat / 2;
+					ME[0].Eat = ME[0].Eat / 2 + ME[0].Eat % 2;
+					ME[1].TF = TRUE;
+
+					ME_Eating(ME[0], O);
+					ME_Eating(ME[1], O);
+
+					ME[1].x = ME[0].x + 2 * (ME[0].r + ME[1].r);
+					ME[1].y = ME[0].y + 2 * (ME[0].r + ME[1].r);
+
+					
+					ME_count1switch = 1;
+				}
+
+				else if (ME_count == 2) {
+				ME_copy(_ME[1], ME[0]);
+				ME_copy(_ME[2], ME[1]);
+
+				ME[2].Eat = ME[0].Eat / 2;
+				ME[0].Eat = ME[0].Eat / 2 + ME[0].Eat % 2;
+				ME[3].Eat = ME[1].Eat / 2;
+				ME[1].Eat = ME[1].Eat / 2 + ME[1].Eat % 2;
+				ME[1].TF = TRUE;
+				ME[2].TF = TRUE;
+				ME[3].TF = TRUE;
+
+				ME_Eating(ME[0], O);
+				ME_Eating(ME[1], O);
+				ME_Eating(ME[2], O);
+				ME_Eating(ME[3], O);
+
+				ME[2].x = ME[0].x + 2 * (ME[0].r + ME[1].r);
+				ME[2].y = ME[0].y ;
+
+				ME[3].x = ME[0].x ;
+				ME[3].y = ME[0].y + 2 * (ME[0].r + ME[1].r);
+				
+				ME_count1switch = 1;
+				}
+			}
+		}
+		InvalidateRect(hWnd, NULL, FALSE);
+		break;
+
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) 
+		{
+		case ID_MENU_START:      
+			MessageBox(hWnd, "START", "Agra.io-" , MB_OKCANCEL | MB_ICONQUESTION);
+			if (answer == IDOK) {
+				SetTimer(hWnd, 1, 500, NULL);	// 먹이생성
+				SetTimer(hWnd, 2, 50, NULL);	// ME[0]움직임
+				SetTimer(hWnd, 3, 3000, NULL);	// 적생성
+				SetTimer(hWnd, 4, 50, NULL);	// 적움직임
+				SetTimer(hWnd, 5, 10000, NULL);	// 트랩생성
+				SetTimer(hWnd, 6, 50, NULL);	// 트랩 움직임
+				SetTimer(hWnd, 8, 10, NULL);	// 시간 타이머
+			}
+			
+				break; 
+
+		case ID_MENU_PAUSE:
+			MessageBox(hWnd, "PAUSE", "Agra.io-", MB_OKCANCEL | MB_ICONQUESTION);
+			if (answer == IDOK) {
+				KillTimer(hWnd, 1);
+				KillTimer(hWnd, 2);
+				KillTimer(hWnd, 3);
+				KillTimer(hWnd, 4);
+				KillTimer(hWnd, 5);
+				KillTimer(hWnd, 6);
+				KillTimer(hWnd, 7);
+				KillTimer(hWnd, 8);
+				KillTimer(hWnd, 9);
+			}
+				
+			break;
+
+		case ID_MENU_EXIT:
+			answer = MessageBox(hWnd, "종료하시겠습니까?", "Agra.io-", MB_OKCANCEL | MB_ICONQUESTION);
+			if (answer == IDOK) {
+				PostQuitMessage(0);;
+
+			}
+			
+			break;
+
+		}   
+		break; 
+
+	case WM_DESTROY:
+		KillTimer(hWnd, 1);
+		KillTimer(hWnd, 2);
+		KillTimer(hWnd, 3);
+		KillTimer(hWnd, 4);
+		KillTimer(hWnd, 5);
+		KillTimer(hWnd, 6);
+		KillTimer(hWnd, 7);
+		KillTimer(hWnd, 8);
+		KillTimer(hWnd, 9);
+		PostQuitMessage(0);
+		break;
+	}
+
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+
+bool Collision(Circle c1, Circle c2) {
+	return ((c2.x - c1.x)*(c2.x - c1.x) + (c2.y - c1.y)*(c2.y - c1.y) > (c1.r + c2.r)*(c1.r + c2.r));
+}
+
+void ME_Eating(Circle &c, Circle &a) {
+	c.Eat += a.Eat;
+	if (c.Eat >= 105)					 { c.r = 38;		c.MOVE = 2 * MOVE_Enemy * MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 105 && c.Eat >= 90) { c.r = 34;		c.MOVE = 2 * MOVE_Enemy * MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 90 && c.Eat >= 75)  { c.r = 30;		c.MOVE = 2 * MOVE_Enemy * MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 75 && c.Eat >= 60)  { c.r = 26;		c.MOVE = 2 * MOVE_Enemy * MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 60 && c.Eat >= 45)  { c.r = 22;		c.MOVE = 2 * MOVE_Enemy * MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 45 && c.Eat >= 30)  { c.r = 18;		c.MOVE = 2 * MOVE_Enemy * MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 30 && c.Eat >= 15)  { c.r = 14;		c.MOVE = 2 * MOVE_Enemy * MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 15 && c.Eat >= 0)   { c.r = 10;		c.MOVE = 2 * MOVE_Enemy * MOVE_Rate; }
+}
+
+void ENEMY_Eating(Circle &c, Circle &a) {
+	c.Eat += a.Eat;
+	if (c.Eat >= 21) { c.r = 37;		c.MOVE = 2 * MOVE_Enemy*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 21 && c.Eat >= 18) { c.r = 33;		c.MOVE = 2 * MOVE_Enemy*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 18 && c.Eat >= 15) { c.r = 29;		c.MOVE = 2 * MOVE_Enemy*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 15 && c.Eat >= 12) { c.r = 25;		c.MOVE = 2 * MOVE_Enemy*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 12 && c.Eat >= 9) { c.r = 21;		c.MOVE = 2 * MOVE_Enemy*MOVE_Rate*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 9 && c.Eat >= 6) { c.r = 17;		c.MOVE = 2 * MOVE_Enemy*MOVE_Rate*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 6 && c.Eat >= 3) { c.r = 13;		c.MOVE = 2 * MOVE_Enemy*MOVE_Rate*MOVE_Rate; }
+	else if (c.Eat < 3 && c.Eat >= 0) { c.r = 10;		c.MOVE = 2 * MOVE_Enemy*MOVE_Rate; }
+}
+
+void Runaway(Circle &a, Circle &b) {
+	if (a.r > b.r) {
+		if (sqrt(a.x*a.x + b.x*b.x) <= 2 * (a.r + b.r)) {
+			if (a.x == b.x && a.y > b.y)		b.Move = 1;
+			else if (a.x <= b.x && a.y > b.y)	b.Move = 2;
+			else if (a.x < b.x && a.y == b.y)	b.Move = 3;
+			else if (a.x < b.x && a.y > b.y)	b.Move = 4;
+			else if (a.x == b.x && a.y < b.y)	b.Move = 5;
+			else if (a.x >= b.x && a.y < b.y)	b.Move = 6;
+			else if (a.x > b.x && a.y == b.y)	b.Move = 7;
+			else if (a.x > b.x && a.y < b.y)	b.Move = 8;
+		}
+	}
+
+	else if (a.r < b.r) {
+		if (sqrt(a.x*a.x + b.x*b.x) <= 2 * (a.r + b.r)) {
+			if (a.x == b.x && a.y > b.y)		a.Move = 1;
+			else if (b.x <= a.x && b.y > a.y)	a.Move = 2;
+			else if (b.x < a.x && b.y == a.y)	a.Move = 3;
+			else if (b.x < a.x && b.y > a.y)	a.Move = 4;
+			else if (b.x == a.x && b.y < a.y)	a.Move = 5;
+			else if (b.x >= a.x && b.y < a.y)	a.Move = 6;
+			else if (b.x > a.x && b.y == a.y)	a.Move = 7;
+			else if (b.x > a.x && b.y < a.y)	a.Move = 8;
+		}
+	}
+}
+
+void ME_copy(Circle a, Circle b) {
+	a.x = b.x;
+	a.y = b.y;
+	a.r = b.r;
+}

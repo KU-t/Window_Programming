@@ -1,0 +1,5 @@
+﻿  6-5.cpp
+  코드를 생성하고 있습니다.
+d:\project\wp\6-5\6-5.cpp(130): error C4700: 초기화되지 않은 'hList' 지역 변수를 사용했습니다.
+  All 3 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+LINK : fatal error LNK1257: 코드를 생성하지 못했습니다.

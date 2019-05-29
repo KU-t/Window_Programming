@@ -1,0 +1,8 @@
+﻿  05.cpp
+c:\users\jaeyeong\desktop\programming\windows api lecture\winapi_chapter05\exec05\05.cpp(206): warning C4101: 'hBit' :참조되지 않은 지역 변수입니다.
+c:\users\jaeyeong\desktop\programming\windows api lecture\winapi_chapter05\exec05\05.cpp(206): warning C4101: 'oldBit' :참조되지 않은 지역 변수입니다.
+c:\users\jaeyeong\desktop\programming\windows api lecture\winapi_chapter05\exec05\05.cpp(258): warning C4101: 'hBit' :참조되지 않은 지역 변수입니다.
+c:\users\jaeyeong\desktop\programming\windows api lecture\winapi_chapter05\exec05\05.cpp(258): warning C4101: 'oldBit' :참조되지 않은 지역 변수입니다.
+c:\users\jaeyeong\desktop\programming\windows api lecture\winapi_chapter05\exec05\05.cpp(296): warning C4101: 'oldBit' :참조되지 않은 지역 변수입니다.
+  Exec05.vcxproj -> C:\Users\Jaeyeong\Desktop\Programming\Windows API Lecture\WinAPI_Chapter05\Debug\Exec05.exe
+  Exec05.vcxproj -> C:\Users\Jaeyeong\Desktop\Programming\Windows API Lecture\WinAPI_Chapter05\Debug\Exec05.pdb (Full PDB)

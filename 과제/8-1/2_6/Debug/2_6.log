@@ -1,0 +1,24 @@
+﻿  2_6.cpp
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(241): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(207): note: 'fopen' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(244): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(1195): note: 'fscanf' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(253): warning C4477: 'fscanf' : 서식 문자열 '%c'에 'char *' 형식의 인수가 필요하지만 variadic 인수 1의 형식이 'int *'입니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(253): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(1195): note: 'fscanf' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(254): warning C4477: 'fscanf' : 서식 문자열 '%c'에 'char *' 형식의 인수가 필요하지만 variadic 인수 1의 형식이 'int *'입니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(254): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(1195): note: 'fscanf' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(256): warning C4477: 'fscanf' : 서식 문자열 '%c'에 'char *' 형식의 인수가 필요하지만 variadic 인수 1의 형식이 'int *'입니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(256): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(1195): note: 'fscanf' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(257): warning C4477: 'fscanf' : 서식 문자열 '%c'에 'char *' 형식의 인수가 필요하지만 variadic 인수 1의 형식이 'int *'입니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(257): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(1195): note: 'fscanf' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(258): warning C4477: 'fscanf' : 서식 문자열 '%c'에 'char *' 형식의 인수가 필요하지만 variadic 인수 1의 형식이 'SIZE *'입니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(258): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(1195): note: 'fscanf' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(274): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h(207): note: 'fopen' 선언을 참조하십시오.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\8-1\2_6\2_6.cpp(285): warning C4477: 'fprintf' : 서식 문자열 '%c'에 'int' 형식의 인수가 필요하지만 variadic 인수 1의 형식이 'SIZE'입니다.
+  2_6.vcxproj -> C:\Users\태균\Desktop\2018_1\윈도우 프로그래밍\과제\8-1\Debug\2_6.exe

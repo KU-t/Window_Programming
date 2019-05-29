@@ -1,0 +1,35 @@
+ case WM_PAINT:
+	{
+
+		PAINTSTRUCT ps;
+		char txt[10];
+		int a, b, c;
+
+		COLORREF text_color,bk_color;
+		
+
+		// TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다.
+		HDC hdc = BeginPaint(hWnd, &ps);
+
+		for (int i = 2; i < 10; i++) {
+			for (int j = 1; j < 10; j++) {
+				a = rand() % 255;
+				b = rand() % 255;
+				c = rand() % 255;
+
+				text_color = RGB(a, b, c);
+				bk_color = RGB(255 - a, 255 - b, 255 - c);
+				
+				wsprintf(txt, "%d*%d=%d", i, j, i*j);
+				SetBkColor(hdc,bk_color);
+
+				SetTextColor(hdc, text_color);
+				TextOut(hdc, 50 + (160 * j), 40 + (90 * i),txt,strlen(txt) );
+
+				
+			}
+		}
+		EndPaint(hWnd, &ps);
+	}
+	
+        break;

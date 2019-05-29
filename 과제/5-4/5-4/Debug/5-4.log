@@ -1,0 +1,4 @@
+﻿  5-4.cpp
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\5-4\5-4\5-4.cpp(53): warning C4101: 'oldBrush' :참조되지 않은 지역 변수입니다.
+c:\users\태균\desktop\2018_1\윈도우 프로그래밍\과제\5-4\5-4\5-4.cpp(53): warning C4101: 'hBrush' :참조되지 않은 지역 변수입니다.
+  5-4.vcxproj -> C:\Users\태균\Desktop\2018_1\윈도우 프로그래밍\과제\5-4\Debug\5-4.exe

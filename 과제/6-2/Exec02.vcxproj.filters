@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="animation\horse\Horse_Draw_01.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_02.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_03.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_04.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_05.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_06.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_07.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_08.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_09.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_10.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_11.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Draw_12.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_01.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_02.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_03.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_04.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_05.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_06.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_07.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_08.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_09.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_10.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_11.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\horse\Horse_Mask_12.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Draw_01.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Draw_02.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Draw_03.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Draw_04.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Draw_05.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Mask_01.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Mask_02.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Mask_03.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Mask_04.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\enemy\Enemy_Mask_05.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\Castle.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\Sky animation.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\ground.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Draw_01.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Draw_02.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Draw_03.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Draw_04.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Draw_05.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Draw_06.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Mask_01.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Mask_02.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Mask_03.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Mask_04.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Mask_05.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\explosion\Explosion_Mask_06.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_01.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_02.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_03.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_04.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_05.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_06.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_07.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_08.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_09.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Draw_10.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_01.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_02.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_03.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_04.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_05.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_06.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_07.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_08.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_09.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="animation\tiger\Tiger_Mask_10.BMP">
+      <Filter>리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="02.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
